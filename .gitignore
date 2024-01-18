@@ -1,1 +1,8 @@
+*__pycache__*
+launch.json
+.env
+*venv*
+*.log
+.mypy_cache
+
 vale.ini

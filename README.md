@@ -4,6 +4,8 @@
 
 ![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 
+> :bulb: *Full demo:* https://github.com/jonathanalgar/docs-demo/pull/2
+
 ## Overview
 
 Containerized GitHub action for interacting with the [activator](https://github.com/jonathanalgar/activator) service.

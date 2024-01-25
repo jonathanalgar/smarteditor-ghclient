@@ -8,6 +8,8 @@
 
 ## Overview
 
+[![Diagram of the system architecture of the activator microservice, showing its integration with GitHub client](activator-diag.png "Activator Architecture Diagram")](https://jonathanalgar.github.io/slides/Using%20AI%20and%20LLMs%20in%20docs-as-code%20pipelines.pdf)
+
 Containerized GitHub action for interacting with the [activator](https://github.com/jonathanalgar/activator) service.
 
 On a trigger comment in a pull request, the action sends the text of a supported file in a request to the [activator](https://github.com/jonathanalgar/activator) service for transformation. It then takes a response from the service, formats accordingly, and posts in-line suggestions or a block comment.

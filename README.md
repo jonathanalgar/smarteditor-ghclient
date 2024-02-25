@@ -1,4 +1,4 @@
-# activator-ghclient
+# smarteditor-ghclient
 
 ![ci](https://github.com/jonathanalgar/activator-ghclient/actions/workflows/build-docker.yml/badge.svg) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=jonathanalgar_activator-ghclient&metric=bugs)](https://sonarcloud.io/summary/new_code?id=jonathanalgar_activator-ghclient) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=jonathanalgar_activator-ghclient&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=jonathanalgar_activator-ghclient) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com) ![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 
@@ -6,18 +6,18 @@
 
 ## Overview
 
-[![Diagram of the system architecture of the activator microservice, showing its integration with GitHub client](activator-diag.png "Activator Architecture Diagram")](https://jonathanalgar.github.io/slides/Using%20AI%20and%20LLMs%20in%20docs-as-code%20pipelines.pdf)
+[![Diagram of the system architecture of the smarteditor microservice, showing its integration with GitHub client](smarteditor-diag.png "Smarteditor Architecture Diagram")](https://jonathanalgar.github.io/slides/Using%20AI%20and%20LLMs%20in%20docs-as-code%20pipelines.pdf)
 
-Containerized GitHub action for interacting with the [activator](https://github.com/jonathanalgar/activator) service.
+Containerized GitHub action for interacting with the [smarteditor](https://github.com/jonathanalgar/smarteditor) service.
 
-On a trigger comment in a pull request, the action sends the text of a supported file in a request to the [activator](https://github.com/jonathanalgar/activator) service for transformation. It then takes a response from the service, formats accordingly, and posts in-line suggestions or a block comment.
+On a trigger comment in a pull request, the action sends the text of a supported file in a request to the [smarteditor](https://github.com/jonathanalgar/smarteditor) service for transformation. It then takes a response from the service, formats accordingly, and posts in-line suggestions or a block comment.
 
  ## Usage
 
-First, create a new GitHub action workflow in your repo (eg. `.github/workflows/activator.yml`):
+First, create a new GitHub action workflow in your repo (eg. `.github/workflows/smarteditor.yml`):
 
 ```yaml
-name: activator
+name: smarteditor
 
 on:
   issue_comment:
@@ -30,11 +30,11 @@ permissions:
   issues: write
 
 jobs:
-  activator-ghclient:
+  smarteditor-ghclient:
     runs-on: ubuntu-latest
-    if: contains(github.event.comment.body, '/activator')
+    if: contains(github.event.comment.body, '/smarteditor')
     container: 
-      image: ghcr.io/jonathanalgar/activator-ghclient:latest
+      image: ghcr.io/jonathanalgar/smarteditor-ghclient:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -63,20 +63,20 @@ jobs:
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.issue.number }}
-          ACTIVATOR_ENDPOINT: ${{ secrets.ACTIVATOR_ENDPOINT }}
-          ACTIVATOR_TOKEN: ${{ secrets.ACTIVATOR_TOKEN }}
+          SMARTEDITOR_ENDPOINT: ${{ secrets.SMARTEDITOR_ENDPOINT }}
+          SMARTEDITOR_TOKEN: ${{ secrets.SMARTEDITOR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           COMMENT_ID: ${{ github.event.comment.id }}
-        run: python /app/activator-ghclient.py
+        run: python /app/smarteditor-ghclient.py
 ```
 
 You'll need to set the following repo secrets:
 
-* `ACTIVATOR_ENDPOINT`: Endpoint URL of the running `activator` (eg. `https://activator-prod.westeurope.cloudapp.azure.com:9100/activator`)
-* `ACTIVATOR_TOKEN`: Single token for service.
+* `SMARTEDITOR_ENDPOINT`: Endpoint URL of the running `smarteditor` (eg. `https://smarteditor-prod.westeurope.cloudapp.azure.com:9100/smarteditor`)
+* `SMARTEDITOR_TOKEN`: Single token for service.
 
-Once that's done you can comment `/activator /path/to/file.md` in a pull request to trigger the action.
+Once that's done you can comment `/smarteditor /path/to/file.md` in a pull request to trigger the action.
 
 ## TODO
 

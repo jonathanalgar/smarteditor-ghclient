@@ -11,11 +11,11 @@ permissions:
   issues: write
 
 jobs:
-  activator-ghclient:
+  smarteditor-ghclient:
     runs-on: ubuntu-latest
-    if: contains(github.event.comment.body, '/activator')
+    if: contains(github.event.comment.body, '/smarteditor')
     container: 
-      image: ghcr.io/jonathanalgar/activator-ghclient:latest
+      image: ghcr.io/jonathanalgar/smarteditor-ghclient:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -44,9 +44,9 @@ jobs:
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.issue.number }}
-          ACTIVATOR_ENDPOINT: ${{ secrets.ACTIVATOR_ENDPOINT }}
-          ACTIVATOR_TOKEN: ${{ secrets.ACTIVATOR_TOKEN }}
+          SMARTEDITOR_ENDPOINT: ${{ secrets.SMARTEDITOR_ENDPOINT }}
+          SMARTEDITOR_TOKEN: ${{ secrets.SMARTEDITOR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           COMMENT_ID: ${{ github.event.comment.id }}
-        run: python /app/activator-ghclient.py
+        run: python /app/smarteditor-ghclient.py

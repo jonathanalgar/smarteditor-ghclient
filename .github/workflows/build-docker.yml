@@ -33,5 +33,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/jonathanalgar/activator-ghclient:${{ steps.extract_tag.outputs.tag }}
-            ghcr.io/jonathanalgar/activator-ghclient:latest
+            ghcr.io/jonathanalgar/smarteditor-ghclient:${{ steps.extract_tag.outputs.tag }}
+            ghcr.io/jonathanalgar/smarteditor-ghclient:latest

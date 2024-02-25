@@ -74,7 +74,7 @@ class SmartEditorHandler:
 
     def post_review_comment_on_violation(self, file_path, violation, github_handler, pr_number):
         """
-        Posts a review comment on a specific line of a file in a pull request, highlighting an instance of passive voice.
+        Posts a review comment on a specific line of a file in a pull request, highlighting an instance of a violation.
 
         Args:
             file_path (str): The path of the file within the pull request.
@@ -94,7 +94,7 @@ class SmartEditorHandler:
             logging.warning(f"[{file_path}] File not found in pull request")
             return
 
-        # Locating the exact line in the file diff where the original passive sentence appears.
+        # Locating the exact line in the file diff where the original sentence appears.
         diff_lines = file_diff.split('\n')
         for i, line in enumerate(diff_lines):
             if violation['original_sentence'] in line:
@@ -105,7 +105,7 @@ class SmartEditorHandler:
                 review_message = f"**Suggested Change:**\n```suggestion\n{updated_line}\n```\n"
                 review_message += f"**Explanation:** {violation['clear_explanation']}"
                 pr.create_review_comment(review_message, commit_obj, file_path, position)
-                logging.info(f"[{file_path}] Posted a review comment for instance of passive voice on line {position}")
+                logging.info(f"[{file_path}] Posted a review comment for instance of a violation on line {position}")
 
 
 def parse_smarteditor_comment(file_path, comment_body):
@@ -186,7 +186,7 @@ async def commit_edited_file(github_handler, file_path, pr_number):
 
 async def process_file(session, file_path, smarteditor_handler, github_handler, smarteditor_endpoint, pr_number):
     """
-    Processes a file to make suggestions on instances of passive voice.
+    Processes a file to make suggestions on instances of style guide rule violations.
 
     Args:
         session (aiohttp.ClientSession): The client session for HTTP requests.
@@ -210,7 +210,7 @@ async def process_file(session, file_path, smarteditor_handler, github_handler, 
             return
 
         if not response["data"].get('violations'):
-            logging.info(f"[{file_path}] No instances of sentences written in passive voice found")
+            logging.info(f"[{file_path}] No instances of sentences with style guide rule violations found")
             github_handler.post_comment(f"There appear to be no instances of sentences that violate the style guide rules in `{file_path}`.")
             return
 

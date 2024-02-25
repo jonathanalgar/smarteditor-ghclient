@@ -9,4 +9,4 @@ RUN mkdir /app
 WORKDIR /app
 ADD . /app
 
-CMD python activator-ghclient.py
+CMD python smarteditor-ghclient.py

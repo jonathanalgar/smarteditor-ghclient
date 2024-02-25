@@ -12,41 +12,41 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%d-%m-%Y %H:%M:%S')
 
 
-class ActivatorHandler:
+class SmartEditorHandler:
     """
-    Handles retrieval and updating of active voice suggestions.
+    Handles retrieval and updating of suggestions.
     """
     def __init__(self):
         pass
 
-    async def send_to_activator(self, session, file_path, text, activator_endpoint):
+    async def send_to_smarteditor(self, session, file_path, text, smarteditor_endpoint):
         """
-        Asynchronously sends text content to ACTIVATOR_ENDPOINT and retrieves suggestions.
+        Asynchronously sends text content to SMARTEDITOR_ENDPOINT and retrieves suggestions.
 
         Args:
             session (ClientSession): An aiohttp client session for making HTTP requests.
             text (str): The text to be sent for review.
-            activator_endpoint (str): Activator service URL.
+            smarteditor_endpoint (str): Smarteditor service URL.
 
         Returns:
-            dict: A dictionary containing the response from ACTIVATOR_ENDPOINT.
+            dict: A dictionary containing the response from SMARTEDITOR_ENDPOINT.
         """
-        ACTIVATOR_TIMEOUT = 120
+        SMARTEDITOR_TIMEOUT = 120
         response_structure = {"success": False, "data": None}
 
-        logging.info(f'[{file_path}] Sending request to ACTIVATOR_ENDPOINT')
+        logging.info(f'[{file_path}] Sending request to SMARTEDITOR_ENDPOINT')
         headers = {
             "Content-Type": "application/json",
-            "X-API-Token": os.getenv('ACTIVATOR_TOKEN')
+            "X-API-Token": os.getenv('SMARTEDITOR_TOKEN')
         }
         payload = {"text": text}
         try:
-            async with session.post(activator_endpoint, json=payload, headers=headers, timeout=ACTIVATOR_TIMEOUT) as response:
+            async with session.post(smarteditor_endpoint, json=payload, headers=headers, timeout=SMARTEDITOR_TIMEOUT) as response:
                 response.raise_for_status()
                 response_structure["data"] = await response.json()
                 response_structure["success"] = True
         except asyncio.TimeoutError:
-            logging.error(f'[{file_path}] Request to ACTIVATOR_ENDPOINT timed out')
+            logging.error(f'[{file_path}] Request to SMARTEDITOR_ENDPOINT timed out')
         except aiohttp.ClientResponseError as e:
             logging.error(f'[{file_path}] HTTP Response Error: {e}')
         except Exception as e:
@@ -54,17 +54,17 @@ class ActivatorHandler:
 
         return response_structure
 
-    def format_activator_suggestions(self, violations):
+    def format_smarteditor_suggestions(self, violations):
         """
-        Formats the response from ACTIVATOR_ENDPOINT.
+        Formats the response from SMARTEDITOR_ENDPOINT.
 
         Takes a list of violation objects and formats them into a string that lists the original sentences and their suggested revisions along with explanations.
 
         Args:
-            violations (list): A list of violation objects returned by ACTIVATOR_ENDPOINT.
+            violations (list): A list of violation objects returned by SMARTEDITOR_ENDPOINT.
 
         Returns:
-            str: A formatted string representing the activator suggestions.
+            str: A formatted string representing the smarteditor suggestions.
         """
         formatted_suggestions = [
             f"**Original:** {violation['original_sentence']}\n**Revised:** {violation['revised_sentence']}\n**Explanation:** {violation['clear_explanation']}\n\n"
@@ -108,32 +108,32 @@ class ActivatorHandler:
                 logging.info(f"[{file_path}] Posted a review comment for instance of passive voice on line {position}")
 
 
-def parse_activator_comment(file_path, comment_body):
+def parse_smarteditor_comment(file_path, comment_body):
     """
-    Parses the body of the activator comment and extracts original and revised sentences.
+    Parses the body of the smarteditor comment and extracts original and revised sentences.
 
     Args:
-        comment_body (str): The body of the activator comment.
+        comment_body (str): The body of the smarteditor comment.
 
     Returns:
         List[Tuple[str, str]]: A list of tuples, each containing the original and revised sentences extracted from the comment.
     """
-    logging.debug(f"[{file_path}] Parsing activator command comment: {comment_body}")
+    logging.debug(f"[{file_path}] Parsing smarteditor command comment: {comment_body}")
 
     pattern = re.compile(r"\*\*Original:\*\*\s(.*?)\n\*\*Revised:\*\*\s(.*?)\n\*\*Explanation:\*\*", re.DOTALL)
     matches = pattern.findall(comment_body)
 
     if not matches:
-        logging.warning(f"[{file_path}] No matches found in activator comment. Review regex pattern and comment format")
+        logging.warning(f"[{file_path}] No matches found in smarteditor comment. Review regex pattern and comment format")
     else:
-        logging.info(f"[{file_path}] Extracted tuples from activator comment: {matches}")
+        logging.info(f"[{file_path}] Extracted tuples from smarteditor comment: {matches}")
 
     return matches
 
 
 async def commit_edited_file(github_handler, file_path, pr_number):
     """
-    Commits the edited file to the repository based on the complete suggestions from the last activator review comment.
+    Commits the edited file to the repository based on the complete suggestions from the last smarteditor review comment.
 
     Args:
         github_handler (GitHubHandler): An instance of GitHubHandler for interacting with GitHub.
@@ -151,16 +151,16 @@ async def commit_edited_file(github_handler, file_path, pr_number):
         (
             comment
             for comment in pr_comments
-            if f"Activator suggestions for `{file_path}`" in comment.body
+            if f"SMARTEDITOR suggestions for `{file_path}`" in comment.body
         ),
         None,
     )
     if not latest_review_comment:
-        logging.error(f"[{file_path}] Failed to find activator review comment. Unable to proceed with commit")
+        logging.error(f"[{file_path}] Failed to find smarteditor review comment. Unable to proceed with commit")
         return
 
-    suggestions = parse_activator_comment(file_path, latest_review_comment.body)
-    logging.info(f"[{file_path}] Extracted tuples from activator comment: {suggestions}")
+    suggestions = parse_smarteditor_comment(file_path, latest_review_comment.body)
+    logging.info(f"[{file_path}] Extracted tuples from smarteditor comment: {suggestions}")
     with open(file_path, 'r') as file:
         content = file.read()
 
@@ -184,16 +184,16 @@ async def commit_edited_file(github_handler, file_path, pr_number):
         logging.info(f"[{file_path}] No text replacements required. Skipping the commit process")
 
 
-async def process_file(session, file_path, activator_handler, github_handler, activator_endpoint, pr_number):
+async def process_file(session, file_path, smarteditor_handler, github_handler, smarteditor_endpoint, pr_number):
     """
     Processes a file to make suggestions on instances of passive voice.
 
     Args:
         session (aiohttp.ClientSession): The client session for HTTP requests.
         file_path (str): The path of the file to be processed.
-        activator_handler (ActivatorHandler): An instance of ActivatorHandler for processing.
+        smarteditor_handler (SMARTEDITORHandler): An instance of SMARTEDITORHandler for processing.
         github_handler (GitHubHandler): An instance of GitHubHandler for interacting with GitHub.
-        activator_endpoint (str): Activator service URL.
+        smarteditor_endpoint (str): SMARTEDITOR service URL.
         pr_number (int): The number of the associated pull request.
     """
     logging.info(f"[{file_path}] Starting review")
@@ -202,16 +202,16 @@ async def process_file(session, file_path, activator_handler, github_handler, ac
         with open(file_path, 'r') as file:
             content = file.read()
 
-        response = await activator_handler.send_to_activator(session, file_path, content, activator_endpoint)
+        response = await smarteditor_handler.send_to_smarteditor(session, file_path, content, smarteditor_endpoint)
 
         if not response["success"]:
-            logging.error(f"[{file_path}] Failed to get a response from ACTIVATOR_ENDPOINT.")
-            github_handler.post_comment(f"Failed to get a response from the ACTIVATOR_ENDPOINT for file `{file_path}`. Please check the logs for more details.")
+            logging.error(f"[{file_path}] Failed to get a response from SMARTEDITOR_ENDPOINT.")
+            github_handler.post_comment(f"Failed to get a response from the SMARTEDITOR_ENDPOINT for file `{file_path}`. Please check the logs for more details.")
             return
 
         if not response["data"].get('violations'):
             logging.info(f"[{file_path}] No instances of sentences written in passive voice found")
-            github_handler.post_comment(f"There appear to be no instances of sentences written in passive voice in `{file_path}`.")
+            github_handler.post_comment(f"There appear to be no instances of sentences that violate the style guide rules in `{file_path}`.")
             return
 
         file_status = github_handler.get_file_status(file_path)
@@ -219,21 +219,21 @@ async def process_file(session, file_path, activator_handler, github_handler, ac
         run_url_text = f"[Explore how the LLM generated them.]({run_url})" if run_url else ""
 
         if file_status == 'added':
-            review_comment = f"Activator suggestions for `{file_path}` posted below."
+            review_comment = f"SMARTEDITOR suggestions for `{file_path}` posted below."
             if run_url:
                 review_comment += f" {run_url_text}"
             github_handler.post_comment(review_comment)
 
             for violation in response["data"]['violations']:
-                activator_handler.post_review_comment_on_violation(file_path, violation, github_handler, pr_number)
+                smarteditor_handler.post_review_comment_on_violation(file_path, violation, github_handler, pr_number)
 
         elif file_status == 'modified':
-            formatted_response = activator_handler.format_activator_suggestions(response["data"]['violations'])
-            final_comment = f"Activator suggestions for `{file_path}`:\n\n{formatted_response}"
+            formatted_response = smarteditor_handler.format_smarteditor_suggestions(response["data"]['violations'])
+            final_comment = f"SMARTEDITOR suggestions for `{file_path}`:\n\n{formatted_response}"
             if run_url:
                 final_comment += run_url_text
 
-            final_comment += f" Use `/activator {file_path} --commit` to commit all suggestions."
+            final_comment += f" Use `/smarteditor {file_path} --commit` to commit all suggestions."
             github_handler.post_comment(final_comment)
 
     except Exception as e:
@@ -249,7 +249,7 @@ async def main():
     pr_number = os.getenv('PR_NUMBER')
     comment_id = os.getenv('COMMENT_ID')
     comment_body = os.getenv('COMMENT_BODY', '')
-    activator_endpoint = os.getenv('ACTIVATOR_ENDPOINT')
+    smarteditor_endpoint = os.getenv('SMARTEDITOR_ENDPOINT')
 
     pr_number = int(pr_number) if pr_number else None
     comment_id = int(comment_id) if comment_id else None
@@ -257,26 +257,26 @@ async def main():
     logging.debug(f"Received comment body (raw): {repr(comment_body)}")
 
     github_handler = GitHubHandler(repo_name, pr_number)
-    activator_handler = ActivatorHandler()
+    smarteditor_handler = SmartEditorHandler()
 
     SUPPORTED_FILE_TYPES = ['.md', '.mdx', '.ipynb']
     file_types_regex = r"(" + '|'.join(re.escape(ext) for ext in SUPPORTED_FILE_TYPES) + r")"
 
     if commit_match := re.search(
-        rf'/activator\s+([\w/.\-]*[\w.\-]+{file_types_regex})\s+--commit', comment_body
+        rf'/smarteditor\s+([\w/.\-]*[\w.\-]+{file_types_regex})\s+--commit', comment_body
     ):
         file_path = commit_match[1]
         logging.info(f"[{file_path}] Commit command identified")
 
         await commit_edited_file(github_handler, file_path, pr_number)
     elif file_path_match := re.search(
-        rf'/activator\s+([\w/.\-]*[\w.\-]+{file_types_regex})', comment_body
+        rf'/smarteditor\s+([\w/.\-]*[\w.\-]+{file_types_regex})', comment_body
     ):
         file_path = file_path_match[1]
         logging.info(f"[{file_path}] File path identified")
 
         async with aiohttp.ClientSession() as session:
-            await process_file(session, file_path, activator_handler, github_handler, activator_endpoint, pr_number)
+            await process_file(session, file_path, smarteditor_handler, github_handler, smarteditor_endpoint, pr_number)
     else:
         logging.info("No valid command found in the comment.")
 

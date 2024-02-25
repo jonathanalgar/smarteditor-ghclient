@@ -71,10 +71,12 @@ jobs:
         run: python /app/smarteditor-ghclient.py
 ```
 
-You'll need to set the following repo secrets:
+You'll need to [add the following repo secrets](https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization/managing-development-environment-secrets-for-your-repository-or-organization#adding-secrets-for-a-repository):
 
 * `SMARTEDITOR_ENDPOINT`: Endpoint URL of the running `smarteditor` (eg. `https://smarteditor-prod.westeurope.cloudapp.azure.com:9100/smarteditor`)
 * `SMARTEDITOR_TOKEN`: Single token for service.
+
+Optionally you can [add repo environment variables](https://docs.github.com/en/actions/learn-github-actions/variables#creating-configuration-variables-for-a-repository) `SMARTEDITOR_GITHUB_TOKEN_OVERRIDE` (text of a repo secret name, for example `CR_TOKEN`—if using pass the secret in `alttexter.yml`), `SMARTEDITOR_GITHUB_USERNAME` & `SMARTEDITOR_GITHUB_EMAIL` to override the default GitHub token, username and email used for commits.
 
 Once that's done you can comment `/smarteditor /path/to/file.md` in a pull request to trigger the action.
 

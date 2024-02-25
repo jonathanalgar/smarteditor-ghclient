@@ -233,7 +233,7 @@ async def process_file(session, file_path, smarteditor_handler, github_handler, 
             if run_url:
                 final_comment += run_url_text
 
-            final_comment += f" Use `/smarteditor {file_path} --commit` to commit all suggestions."
+            final_comment += f" Use `smarteditor {file_path} --commit` to commit all suggestions."
             github_handler.post_comment(final_comment)
 
     except Exception as e:

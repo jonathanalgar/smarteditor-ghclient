@@ -16,11 +16,12 @@ class GitHubHandler:
     """
     def __init__(self, repo_name, pr_number):
         """
-        Initializes GitHubHandler with repository and pull request details.
+        Initializes the GitHubHandler with repository details and the pull request number.
 
         Args:
-            repo_name (str): Repository name.
-            pr_number (int): Pull request number.
+            repo_name (str): The name of the repository in the format 'owner/repo'.
+            pr_number (int): The number of the pull request within the repository.
+            silent_mode (bool, optional): If True, operates in silent mode where comments are not posted. Defaults to False.
         """
         token_var_name = os.getenv('SMARTEDITOR_GITHUB_TOKEN_OVERRIDE')
         if token_var_name:

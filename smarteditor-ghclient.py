@@ -21,15 +21,16 @@ class SmartEditorHandler:
 
     async def send_to_smarteditor(self, session, file_path, text, smarteditor_endpoint):
         """
-        Asynchronously sends text content to SMARTEDITOR_ENDPOINT and retrieves suggestions.
+        Sends text to the SmartEditor service for processing and retrieves suggestions.
 
         Args:
-            session (ClientSession): An aiohttp client session for making HTTP requests.
-            text (str): The text to be sent for review.
-            smarteditor_endpoint (str): Smarteditor service URL.
+            session (aiohttp.ClientSession): The session used for making HTTP requests.
+            file_path (str): The path of the file being processed, used for logging.
+            text (str): The text content to be sent to the SmartEditor service.
+            smarteditor_endpoint (str): The endpoint URL of the SmartEditor service.
 
         Returns:
-            dict: A dictionary containing the response from SMARTEDITOR_ENDPOINT.
+            Dict: A dictionary containing the success status and data from the SmartEditor service.
         """
         SMARTEDITOR_TIMEOUT = 120
         response_structure = {"success": False, "data": None}
@@ -56,15 +57,13 @@ class SmartEditorHandler:
 
     def format_smarteditor_suggestions(self, violations):
         """
-        Formats the response from SMARTEDITOR_ENDPOINT.
-
-        Takes a list of violation objects and formats them into a string that lists the original sentences and their suggested revisions along with explanations.
+        Formats the violations/suggestions received from the SmartEditor service into a readable string.
 
         Args:
-            violations (list): A list of violation objects returned by SMARTEDITOR_ENDPOINT.
+            violations (List[Dict]): A list of dictionaries, each representing a violation with details such as the original sentence, the revised sentence, and an explanation.
 
         Returns:
-            str: A formatted string representing the smarteditor suggestions.
+            str: A formatted string that lists the original sentences, their revisions, and explanations.
         """
         formatted_suggestions = [
             f"**Original:** {violation['original_sentence']}\n**Revised:** {violation['revised_sentence']}\n**Explanation:** {violation['clear_explanation']}\n\n"
@@ -110,13 +109,14 @@ class SmartEditorHandler:
 
 def parse_smarteditor_comment(file_path, comment_body):
     """
-    Parses the body of the smarteditor comment and extracts original and revised sentences.
+    Parses the body of a SmartEditor comment to extract original and revised sentences.
 
     Args:
-        comment_body (str): The body of the smarteditor comment.
+        file_path (str): The path of the file for which the comment was made.
+        comment_body (str): The body of the SmartEditor comment.
 
     Returns:
-        List[Tuple[str, str]]: A list of tuples, each containing the original and revised sentences extracted from the comment.
+        List[Tuple[str, str]]: A list of tuples where each tuple contains an original sentence and its revised version.
     """
     logging.debug(f"[{file_path}] Parsing smarteditor command comment: {comment_body}")
 
@@ -133,11 +133,11 @@ def parse_smarteditor_comment(file_path, comment_body):
 
 async def commit_edited_file(github_handler, file_path, pr_number):
     """
-    Commits the edited file to the repository based on the complete suggestions from the last smarteditor review comment.
+    Commits the edited file to the repository based on the suggestions from the SmartEditor review comment.
 
     Args:
-        github_handler (GitHubHandler): An instance of GitHubHandler for interacting with GitHub.
-        file_path (str): The path of the file to be edited.
+        github_handler (GitHubHandler): An instance of GitHubHandler for GitHub API interaction.
+        file_path (str): The path of the file that was edited.
         pr_number (int): The number of the pull request associated with the file.
     """
     pr = github_handler.repo.get_pull(pr_number)
@@ -186,15 +186,15 @@ async def commit_edited_file(github_handler, file_path, pr_number):
 
 async def process_file(session, file_path, smarteditor_handler, github_handler, smarteditor_endpoint, pr_number):
     """
-    Processes a file to make suggestions on instances of style guide rule violations.
+    Processes a file to apply SmartEditor suggestions on style guide rule violations.
 
     Args:
-        session (aiohttp.ClientSession): The client session for HTTP requests.
+        session (aiohttp.ClientSession): The client session for making HTTP requests.
         file_path (str): The path of the file to be processed.
-        smarteditor_handler (SMARTEDITORHandler): An instance of SMARTEDITORHandler for processing.
-        github_handler (GitHubHandler): An instance of GitHubHandler for interacting with GitHub.
-        smarteditor_endpoint (str): SMARTEDITOR service URL.
-        pr_number (int): The number of the associated pull request.
+        smarteditor_handler (SmartEditorHandler): An instance of SmartEditorHandler.
+        github_handler (GitHubHandler): An instance of GitHubHandler for GitHub interaction.
+        smarteditor_endpoint (str): The SmartEditor service URL.
+        pr_number (int): The pull request number associated with the file.
     """
     logging.info(f"[{file_path}] Starting review")
 

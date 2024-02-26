@@ -1,4 +1,4 @@
-name: activator
+name: smarteditor
 
 on:
   issue_comment:

@@ -32,7 +32,7 @@ class SmartEditorHandler:
         Returns:
             Dict: A dictionary containing the success status and data from the SmartEditor service.
         """
-        SMARTEDITOR_TIMEOUT = 120
+        SMARTEDITOR_TIMEOUT = 240
         response_structure = {"success": False, "data": None}
 
         logging.info(f'[{file_path}] Sending request to SMARTEDITOR_ENDPOINT')

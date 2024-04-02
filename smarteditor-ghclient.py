@@ -263,16 +263,16 @@ async def main():
     file_types_regex = r"(" + '|'.join(re.escape(ext) for ext in SUPPORTED_FILE_TYPES) + r")"
 
     if commit_match := re.search(
-        rf'/smarteditor\s+([\w/.\-]*[\w.\-]+{file_types_regex})\s+--commit', comment_body
+        rf'/smarteditor\s+([\w/.\-\\]*[\w.\-]+{file_types_regex})\s+--commit', comment_body
     ):
-        file_path = commit_match[1]
+        file_path = commit_match[1].replace('\\', '/')
         logging.info(f"[{file_path}] Commit command identified")
-
         await commit_edited_file(github_handler, file_path, pr_number)
+
     elif file_path_match := re.search(
-        rf'/smarteditor\s+([\w/.\-]*[\w.\-]+{file_types_regex})', comment_body
+        rf'/smarteditor\s+([\w/.\-\\]*[\w.\-]+{file_types_regex})', comment_body
     ):
-        file_path = file_path_match[1]
+        file_path = file_path_match[1].replace('\\', '/')
         logging.info(f"[{file_path}] File path identified")
 
         async with aiohttp.ClientSession() as session:
